@@ -7,7 +7,7 @@ back-end powered by [geiser](https://www.nongnu.org/geiser/).
 `geiser-expand-*`. However, I find `macrostep`'s in-place expansions to be more
 convenient than pop-up buffers.
 
-# Usage
+# Set-up
 
 The main entry-point to this package is `macrostep-geiser-setup`. It sets-up the
 various `macrostep` variables needed to provide `geiser`-backed macro expansion.
@@ -29,3 +29,10 @@ Alternatively:
 (eval-after-load 'geiser-mode '(add-hook 'geiser-mode-hook #'macrostep-geiser-setup))
 (eval-after-load 'geiser-repl '(add-hook 'geiser-repl-mode-hook #'macrostep-geiser-setup))
 ```
+
+# Usage
+
+If `macrostep-geiser` is properly set up, `macrostep` will expand macros using
+the REPL. `macrostep-geiser-expand-all` expands the macro at point recursively.
+`macrostep-geiser-expand-all-mode` makes `macrostep` itself also recursively
+expand macros.
