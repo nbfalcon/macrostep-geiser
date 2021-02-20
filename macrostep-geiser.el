@@ -14,8 +14,10 @@
 ;;
 ;; To enable `macrostep' in `geiser-mode' buffer, execute
 ;; `macrostep-geiser-setup'. The latter function can be added to
-;; `geiser-mode-hook':
+;; `geiser-mode-hook' and `geiser-repl-mode-hook':
+;;
 ;; (eval-after-load 'geiser-mode '(add-hook 'geiser-mode-hook #'macrostep-geiser-setup))
+;; (eval-after-load 'geiser-repl '(add-hook 'geiser-repl-mode-hook #'macrostep-geiser-setup))
 
 ;;; Code:
 
