@@ -37,10 +37,17 @@ START and END are the bounds returned by
 `macrostep-sexp-bounds', defaulting to the sexp after `point'."
   (buffer-substring-no-properties (or start (point)) (or end (scan-lists (point) 1 0))))
 
+(define-minor-mode macrostep-geiser-expand-all-mode
+  "Make `macrostep-geiser' expand macros recursively."
+  :init-value nil
+  :lighter nil)
+
 (defun macrostep-geiser-expand-1 (str &optional _env)
   "Expand one level of STR using `geiser'.
 STR is the macro form as a string."
-  (let* ((ret (geiser-eval--send/wait `(:eval (:ge macroexpand (quote (:scm ,str)) :f))))
+  (let* ((ret (geiser-eval--send/wait
+               `(:eval (:ge macroexpand (quote (:scm ,str))
+                        ,(if macrostep-geiser-expand-all-mode :t :f)))))
          (err (geiser-eval--retort-error ret))
          (res (geiser-eval--retort-result ret)))
     (when err
@@ -54,6 +61,13 @@ STR is the macro form as a string."
       (when (string= str res)
         (user-error "Final macro expansion"))
       res)))
+
+(defun macrostep-geiser-expand-all (&optional arg)
+  "Recursively expand the macro at `point'.
+Only works with `geiser'. ARG is passed to `macrostep-expand'."
+  (interactive "P")
+  (let ((macrostep-geiser-expand-all-mode t))
+    (macrostep-expand arg)))
 
 (defface macrostep-geiser-expanded-text-face '((t :inherit macrostep-expand-text))
   "Face used for `macrostep-geiser' expansions."
