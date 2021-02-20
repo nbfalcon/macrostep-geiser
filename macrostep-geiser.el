@@ -35,6 +35,16 @@
 
 (require 'geiser-eval)
 
+;;; declarations
+
+(declare-function macrostep-expand "macrostep" (&optional arg))
+
+(defvar macrostep-macro-form-p-function)
+(defvar macrostep-sexp-at-point-function)
+(defvar macrostep-expand-1-function)
+(defvar macrostep-print-function)
+(defvar macrostep-environment-at-point-function)
+
 ;;; macrostep functions
 
 (defun macrostep-geiser-macro-form-p (_sexp _env)
@@ -91,14 +101,6 @@ EXPANDED is the return value of `macrostep-geiser-expand-1'."
   (insert (propertize expanded 'face 'macrostep-geiser-expanded-text-face)))
 
 
-;;; `macrostep-geiser-setup'
-
-(defvar macrostep-macro-form-p-function)
-(defvar macrostep-sexp-at-point-function)
-(defvar macrostep-expand-1-function)
-(defvar macrostep-print-function)
-(defvar macrostep-environment-at-point-function)
-
 ;;;###autoload
 (defun macrostep-geiser-setup ()
   "Set-up `macrostep' to use `geiser'."
