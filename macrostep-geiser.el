@@ -77,6 +77,12 @@ START and END are the bounds returned by
   :init-value nil
   :lighter nil)
 
+(defun macrostep-geiser--compare-expansions (a b)
+  "Compare A and B for equality, folding whitespace.
+\"(A B)\" = \"(A  B)\"."
+  (string= (replace-regexp-in-string "[[:space:]]+" " " (string-trim a) t t)
+           (replace-regexp-in-string "[[:space:]]+" " " (string-trim b) t t)))
+
 (defun macrostep-geiser-expand-1 (str &optional _env)
   "Expand one level of STR using `geiser'.
 STR is the macro form as a string."
@@ -93,7 +99,7 @@ STR is the macro form as a string."
            ;; start of the line.
            (res (replace-regexp-in-string
                  "^ " (make-string (current-column) ?\ ) res t t)))
-      (when (string= str res)
+      (when (macrostep-geiser--compare-expansions str res)
         (user-error "Final macro expansion"))
       res)))
 
