@@ -93,15 +93,14 @@ STR is the macro form as a string."
          (res (geiser-eval--retort-result ret)))
     (when err
       (user-error "Macro expansion failed: %s" err))
-    (let* ((res (string-remove-prefix "'" (string-trim-right res)))
-           ;; Adjust indentation: for each line, unindent by a space, since
-           ;; we've removed a quote; then indent by how far away we are from the
-           ;; start of the line.
-           (res (replace-regexp-in-string
-                 "^ " (make-string (current-column) ?\ ) res t t)))
-      (when (macrostep-geiser--compare-expansions str res)
-        (user-error "Final macro expansion"))
-      res)))
+    (when (macrostep-geiser--compare-expansions str res)
+      (user-error "Final macro expansion"))
+    ;; Adjust indentation: for each line, unindent by a space, since we've
+    ;; removed a quote; then indent by how far away we are from the start of the
+    ;; line.
+    (let ((res (string-trim-right res)))
+      (replace-regexp-in-string
+       "\n" (concat "\n" (make-string (current-column) ?\ )) res t t))))
 
 (defun macrostep-geiser-expand-all (&optional arg)
   "Recursively expand the macro at `point'.
