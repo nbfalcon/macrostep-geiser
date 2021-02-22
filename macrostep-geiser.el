@@ -106,6 +106,7 @@ STR is the macro form as a string."
   "Recursively expand the macro at `point'.
 Only works with `geiser'. ARG is passed to `macrostep-expand'."
   (interactive "P")
+  (require 'macrostep)
   (let ((macrostep-geiser-expand-all-mode t))
     (macrostep-expand arg)))
 
