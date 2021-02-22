@@ -18,7 +18,7 @@
 ;; Author: Nikita Bloshchanevich
 ;; URL: https://github.com/nbfalcon/macrostep-geiser
 ;; Keywords: languages, scheme
-;; Version: 0.9
+;; Version: 0.1.0
 ;; Package-Requires: ((emacs "24.4") (macrostep "0.9") (geiser "0.12"))
 
 ;;; Commentary:
