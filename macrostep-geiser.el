@@ -95,9 +95,8 @@ STR is the macro form as a string."
       (user-error "Macro expansion failed: %s" err))
     (when (macrostep-geiser--compare-expansions str res)
       (user-error "Final macro expansion"))
-    ;; Adjust indentation: for each line, unindent by a space, since we've
-    ;; removed a quote; then indent by how far away we are from the start of the
-    ;; line.
+    ;; Adjust indentation: indent each line by the offset of the current column
+    ;; from the start column, since expansions are for non-indented forms
     (let ((res (string-trim-right res)))
       (replace-regexp-in-string
        "\n" (concat "\n" (make-string (current-column) ?\ )) res t t))))
