@@ -42,21 +42,19 @@
 ;;   :after geiser-repl
 ;;   :config (add-hook 'geiser-repl-mode-hook #'macrostep-geiser-setup))
 
+;; Additionally, for `cider' integration:
+;;
+;; (eval-after-load 'cider-mode '(add-hook 'cider-mode-hook #'macrostep-geiser-setup))
+;;
+;; Or, using `use-package':
+;;
+;; (use-package macrostep-geiser
+;;   :after cider-mode
+;;   :config (add-hook 'cider-mode-hook #'macrostep-geiser-setup))
+
 ;;; Code:
 
 (require 'subr-x)
-
-(require 'geiser-eval)
-
-;;; declarations
-
-(declare-function macrostep-expand "macrostep" (&optional arg))
-
-(defvar macrostep-macro-form-p-function)
-(defvar macrostep-sexp-at-point-function)
-(defvar macrostep-expand-1-function)
-(defvar macrostep-print-function)
-(defvar macrostep-environment-at-point-function)
 
 ;;; macrostep functions
 
@@ -72,6 +70,39 @@ START and END are the bounds returned by
 `macrostep-sexp-bounds', defaulting to the sexp after `point'."
   (buffer-substring-no-properties (or start (point)) (or end (scan-lists (point) 1 0))))
 
+
+;;; Expansion logic
+
+(defun macrostep-geiser-geiser-expand (str &optional expand-all?)
+  "Expand STR using `geiser'.
+See `macrostep-geiser-expand-function' for EXPAND-ALL?."
+  (require 'geiser-eval)
+  (declare-function geiser-eval--send/wait "geiser-eval" (code &optional timeout buffer))
+  (declare-function geiser-eval--retort-error "geiser-eval" (ret))
+  (declare-function geiser-eval--retort-result "geiser-eval" (ret))
+  (let* ((ret (geiser-eval--send/wait `(:eval (:ge macroexpand (quote (:scm ,str))
+                                               ,(if expand-all? :t :f)))))
+         (err (geiser-eval--retort-error ret)))
+    (when err
+      (user-error "Macro expansion failed: %s" err))
+    (geiser-eval--retort-result ret)))
+
+(defun macrostep-geiser-cider-expand (str &optional expand-all?)
+  "Expand STR using `cider'.
+See `macrostep-geiser-expand-function' for EXPAND-ALL?."
+  (require 'cider-macroexpansion)
+  (declare-function cider-sync-request:macroexpand "cider-macroexpansion"
+                    (expander expr &optional display-namespaces))
+  (or (cider-sync-request:macroexpand (if expand-all? "macroexpand" "macroexpand-1") str)
+      (user-error "Macro expansion failed")))
+
+(defvar macrostep-geiser-expand-function #'macrostep-geiser-geiser-expand
+  "Function used to expand a macro string.
+It is called with to arguments: the string to be expanded, and a
+boolean indicating whether the macro should be expanded
+recursively or just one level of it (`macroexpand' or
+`macroexpand-1').")
+
 (define-minor-mode macrostep-geiser-expand-all-mode
   "Make `macrostep-geiser' expand macros recursively."
   :init-value nil
@@ -86,13 +117,8 @@ START and END are the bounds returned by
 (defun macrostep-geiser-expand-1 (str &optional _env)
   "Expand one level of STR using `geiser'.
 STR is the macro form as a string."
-  (let* ((ret (geiser-eval--send/wait
-               `(:eval (:ge macroexpand (quote (:scm ,str))
-                        ,(if macrostep-geiser-expand-all-mode :t :f)))))
-         (err (geiser-eval--retort-error ret))
-         (res (geiser-eval--retort-result ret)))
-    (when err
-      (user-error "Macro expansion failed: %s" err))
+  (let* ((res (funcall macrostep-geiser-expand-function str
+                       macrostep-geiser-expand-all-mode)))
     (when (macrostep-geiser--compare-expansions str res)
       (user-error "Final macro expansion"))
     ;; Adjust indentation: indent each line by the offset of the current column
@@ -101,11 +127,13 @@ STR is the macro form as a string."
       (replace-regexp-in-string
        "\n" (concat "\n" (make-string (current-column) ?\ )) res t t))))
 
+
 (defun macrostep-geiser-expand-all (&optional arg)
   "Recursively expand the macro at `point'.
 Only works with `geiser'. ARG is passed to `macrostep-expand'."
   (interactive "P")
   (require 'macrostep)
+  (declare-function macrostep-expand "macrostep" (&optional arg))
   (let ((macrostep-geiser-expand-all-mode t))
     (macrostep-expand arg)))
 
@@ -123,11 +151,19 @@ EXPANDED is the return value of `macrostep-geiser-expand-1'."
 (defun macrostep-geiser-setup ()
   "Set-up `macrostep' to use `geiser'."
   (interactive)
+  (defvar macrostep-macro-form-p-function)
+  (defvar macrostep-sexp-at-point-function)
+  (defvar macrostep-expand-1-function)
+  (defvar macrostep-print-function)
+  (defvar macrostep-environment-at-point-function)
   (setq-local macrostep-macro-form-p-function #'macrostep-geiser-macro-form-p
               macrostep-sexp-at-point-function #'macrostep-geiser-sexp-at-point
               macrostep-expand-1-function #'macrostep-geiser-expand-1
               macrostep-print-function #'macrostep-geiser-print
-              macrostep-environment-at-point-function #'ignore))
+              macrostep-environment-at-point-function #'ignore
+              macrostep-geiser-expand-function
+              (cond ((bound-and-true-p cider-mode) #'macrostep-geiser-cider-expand)
+                    (t #'macrostep-geiser-geiser-expand))))
 
 (provide 'macrostep-geiser)
 ;;; macrostep-geiser.el ends here

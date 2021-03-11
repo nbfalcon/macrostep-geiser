@@ -30,6 +30,20 @@ Alternatively:
 (eval-after-load 'geiser-repl '(add-hook 'geiser-repl-mode-hook #'macrostep-geiser-setup))
 ```
 
+Additionally, this package can also integrate with `cider-mode`:
+
+```emacs-lisp
+(use-package macrostep-geiser
+  :after cider-mode
+  :config (add-hook 'cider-mode-hook #'macrostep-geiser-setup))
+```
+
+Alternatively:
+
+```emacs-lisp
+(eval-after-load 'cider-mode '(add-hook 'cider-mode-hook #'macrostep-geiser-setup))
+```
+
 # Usage
 
 If `macrostep-geiser` is properly set up, `macrostep` will expand macros using
