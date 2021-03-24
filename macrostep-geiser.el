@@ -56,7 +56,7 @@
 
 (require 'subr-x)
 
-;;; macrostep functions
+;;; macrostep: detection functions
 
 (defun macrostep-geiser-macro-form-p (_sexp _env)
   "`macrostep-macro-form-p' for `geiser'."
@@ -69,9 +69,8 @@
 START and END are the bounds returned by
 `macrostep-sexp-bounds', defaulting to the sexp after `point'."
   (buffer-substring-no-properties (or start (point)) (or end (scan-lists (point) 1 0))))
-
 
-;;; Expansion logic
+;;; Expansion: back-ends
 
 (defun macrostep-geiser-geiser-expand (str &optional expand-all?)
   "Expand STR using `geiser'.
@@ -95,6 +94,8 @@ See `macrostep-geiser-expand-function' for EXPAND-ALL?."
                     (expander expr &optional display-namespaces))
   (or (cider-sync-request:macroexpand (if expand-all? "macroexpand" "macroexpand-1") str)
       (user-error "Macro expansion failed")))
+
+;;; Expansion
 
 (defvar macrostep-geiser-expand-function #'macrostep-geiser-geiser-expand
   "Function used to expand a macro string.
@@ -127,15 +128,17 @@ STR is the macro form as a string."
       (replace-regexp-in-string
        "\n" (concat "\n" (make-string (current-column) ?\ )) res t t))))
 
-
 (defun macrostep-geiser-expand-all (&optional arg)
   "Recursively expand the macro at `point'.
-Only works with `geiser'. ARG is passed to `macrostep-expand'."
+Only works with `geiser' and `cider'. ARG is passed to
+`macrostep-expand'."
   (interactive "P")
   (require 'macrostep)
   (declare-function macrostep-expand "macrostep" (&optional arg))
   (let ((macrostep-geiser-expand-all-mode t))
     (macrostep-expand arg)))
+
+;;; macrostep: printing
 
 (defface macrostep-geiser-expanded-text-face '((t :inherit macrostep-expand-text))
   "Face used for `macrostep-geiser' expansions."
@@ -145,8 +148,9 @@ Only works with `geiser'. ARG is passed to `macrostep-expand'."
   "`macrostep-print-function' for `geiser'.
 EXPANDED is the return value of `macrostep-geiser-expand-1'."
   (insert (propertize expanded 'face 'macrostep-geiser-expanded-text-face)))
-
 
+;;; Set-up
+
 ;;;###autoload
 (defun macrostep-geiser-setup ()
   "Set-up `macrostep' to use `geiser'."
