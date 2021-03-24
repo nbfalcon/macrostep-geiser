@@ -23,7 +23,7 @@
 
 ;;; Commentary:
 
-;; Provides `macrostep' support for scheme by leveraging `geiser'.
+;; Provides `macrostep' support for `geiser' and `cider'.
 ;;
 ;; To enable `macrostep' in `geiser-mode' buffer, execute
 ;; `macrostep-geiser-setup'. The latter function can be added to
@@ -116,7 +116,7 @@ recursively or just one level of it (`macroexpand' or
            (replace-regexp-in-string "[[:space:]]+" " " (string-trim b) t t)))
 
 (defun macrostep-geiser-expand-1 (str &optional _env)
-  "Expand one level of STR using `geiser'.
+  "Expand one level of STR using `macrostep-geiser'.
 STR is the macro form as a string."
   (let* ((res (funcall macrostep-geiser-expand-function str
                        macrostep-geiser-expand-all-mode)))
@@ -130,7 +130,7 @@ STR is the macro form as a string."
 
 (defun macrostep-geiser-expand-all (&optional arg)
   "Recursively expand the macro at `point'.
-Only works with `geiser' and `cider'. ARG is passed to
+Only works with `macrostep-geiser'. ARG is passed to
 `macrostep-expand'."
   (interactive "P")
   (require 'macrostep)
@@ -145,7 +145,7 @@ Only works with `geiser' and `cider'. ARG is passed to
   :group 'macrostep-geiser)
 
 (defun macrostep-geiser-print (expanded &rest _)
-  "`macrostep-print-function' for `geiser'.
+  "`macrostep-print-function' for `macrostep-geiser'.
 EXPANDED is the return value of `macrostep-geiser-expand-1'."
   (insert (propertize expanded 'face 'macrostep-geiser-expanded-text-face)))
 
