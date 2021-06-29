@@ -160,12 +160,12 @@ EXPANDED is the return value of `macrostep-geiser-expand-1'."
   (defvar macrostep-expand-1-function)
   (defvar macrostep-print-function)
   (defvar macrostep-environment-at-point-function)
-  (setq-local macrostep-macro-form-p-function #'macrostep-geiser-macro-form-p
-              macrostep-sexp-at-point-function #'macrostep-geiser-sexp-at-point
-              macrostep-expand-1-function #'macrostep-geiser-expand-1
-              macrostep-print-function #'macrostep-geiser-print
-              macrostep-environment-at-point-function #'ignore
-              macrostep-geiser-expand-function
+  (setq-local macrostep-macro-form-p-function #'macrostep-geiser-macro-form-p)
+  (setq-local macrostep-sexp-at-point-function #'macrostep-geiser-sexp-at-point)
+  (setq-local macrostep-expand-1-function #'macrostep-geiser-expand-1)
+  (setq-local macrostep-print-function #'macrostep-geiser-print)
+  (setq-local macrostep-environment-at-point-function #'ignore)
+  (setq-local macrostep-geiser-expand-function
               (cond ((bound-and-true-p cider-mode) #'macrostep-geiser-cider-expand)
                     (t #'macrostep-geiser-geiser-expand))))
 
